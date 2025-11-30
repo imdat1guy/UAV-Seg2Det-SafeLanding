@@ -1,0 +1,5 @@
+model,images,selected,SLS_L2,FSR,avg_sel_purity,avg_sel_hfrac,radius_m
+ICG-MobileNet-UNet-10,40,34,0.8,0.0588,0.9666,0.0055,1.0
+ICG-MobileNet-UNet-100,40,34,0.8,0.0588,0.958,0.0049,1.0
+Safe-MobileNet-UNet-10,40,34,0.65,0.0294,0.8575,0.0052,1.0
+Safe-MobileNet-UNet-100,40,34,0.775,0.0588,0.9417,0.0085,1.0
