@@ -101,11 +101,23 @@ def load_levels_mask(path: Path) -> np.ndarray:
 
 # -------------- geometry helpers --------------
 def order_quad_clockwise(pts4: np.ndarray) -> np.ndarray:
-    s = pts4.sum(axis=1)
-    diff = (pts4[:,0] - pts4[:,1])
-    tl = np.argmin(s); br = np.argmax(s)
-    tr = np.argmin(diff); bl = np.argmax(diff)
-    return pts4[[tl, tr, br, bl]]
+    pts = np.asarray(pts4, dtype=np.float32)
+
+    # 1) centroid of the four points
+    c = pts.mean(axis=0)
+
+    # 2) angle of each point around the centroid
+    angles = np.arctan2(pts[:,1] - c[1], pts[:,0] - c[0])
+
+    # 3) sort by angle to get consistent circular order
+    order = np.argsort(angles)
+    ordered = pts[order]
+
+    # 4) rotate so that index 0 is top-left (smallest y, then x)
+    tl_idx = np.lexsort((ordered[:,0], ordered[:,1]))[0]
+    ordered = np.roll(ordered, -tl_idx, axis=0)
+
+    return ordered
 
 def quad_iou(boxA: np.ndarray, boxB: np.ndarray) -> float:
     A = boxA.astype(np.float32)

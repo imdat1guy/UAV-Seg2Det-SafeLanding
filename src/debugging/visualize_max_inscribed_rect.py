@@ -1,4 +1,3 @@
-
 """Robust visualizer for the first greedy placement on image 146 (L3 contaminated OBB).
 Handles both single-channel and BGRA/RGB level masks.
 
@@ -23,12 +22,29 @@ ANGLE_PROBE  = (+15, -15, +30, -30)
 ITERS        = 25
 # -------------------------------------------------------------
 
+# NEW: where to save figures
+OUT_DIR = Path("debug_vis")  # change if you like
+OUT_DIR.mkdir(parents=True, exist_ok=True)
+
 def order_quad_clockwise(pts4: np.ndarray) -> np.ndarray:
-    s = pts4.sum(axis=1)
-    diff = (pts4[:,0] - pts4[:,1])
-    tl = np.argmin(s); br = np.argmax(s)
-    tr = np.argmin(diff); bl = np.argmax(diff)
-    return pts4[[tl, tr, br, bl]]
+    pts = np.asarray(pts4, dtype=np.float32)
+
+    # 1) centroid of the four points
+    c = pts.mean(axis=0)
+
+    # 2) angle of each point around the centroid
+    angles = np.arctan2(pts[:,1] - c[1], pts[:,0] - c[0])
+
+    # 3) sort by angle to get consistent circular order
+    order = np.argsort(angles)
+    ordered = pts[order]
+
+    # 4) rotate so that index 0 is top-left (smallest y, then x)
+    tl_idx = np.lexsort((ordered[:,0], ordered[:,1]))[0]
+    ordered = np.roll(ordered, -tl_idx, axis=0)
+
+    return ordered
+
 
 def build_allowed_mask_for_component(lev_img: np.ndarray,
                                      lvl: int,
@@ -218,21 +234,35 @@ def main():
         residual0, angle_hint_deg=None, margin_px=0, angle_probe=ANGLE_PROBE, iters=ITERS
     )
 
+    stem = LEVELS_PNG.stem  # e.g. "146_levels"
+
     # ---------- Visuals ----------
-    plt.figure(figsize=(12,4))
+
+    # 1) ROI / allowed / residual0
+    fig1 = plt.figure(figsize=(12,4))
     plt.subplot(1,3,1); plt.imshow(m_lvl*255, cmap="gray"); plt.title("L==lvl (ROI)"); plt.axis("off")
     plt.subplot(1,3,2); plt.imshow(allowed_roi*255, cmap="gray"); plt.title("allowed_roi (L≥lvl CC)"); plt.axis("off")
     plt.subplot(1,3,3); plt.imshow(residual0*255, cmap="gray"); plt.title("residual0 (edge-ban + guard)"); plt.axis("off")
-    plt.tight_layout(); plt.show()
+    plt.tight_layout()
+    #fig1.savefig(OUT_DIR / f"{stem}_roi_allowed_residual.png", dpi=400, bbox_inches="tight")  # NEW
+    fig1.savefig(OUT_DIR / f"{stem}_roi_allowed_residual.pdf", bbox_inches="tight")
+    plt.show()
+    plt.close(fig1)
 
+    # 2) Distance transform
     dt = trace["dt"]; cx, cy = trace["center"]
-    plt.figure(figsize=(6,5))
+    fig2 = plt.figure(figsize=(6,5))
     plt.imshow(dt, cmap="magma"); plt.scatter([cx],[cy], s=64, c="w", edgecolors="k")
-    plt.title(f"Distance Transform (DT) with chosen center ({cx},{cy})"); plt.axis("off"); plt.show()
+    plt.title(f"Distance Transform (DT) with chosen center ({cx},{cy})"); plt.axis("off")
+    #fig2.savefig(OUT_DIR / f"{stem}_distance_transform.png", dpi=400, bbox_inches="tight")  # NEW
+    fig2.savefig(OUT_DIR / f"{stem}_distance_transform.pdf", bbox_inches="tight")
+    plt.show()
+    plt.close(fig2)
 
+    # 3) Per-angle search
     per = trace["per_angle"]
     cols = 3; rows = int(np.ceil(len(per)/cols))
-    plt.figure(figsize=(cols*5, rows*4))
+    fig3 = plt.figure(figsize=(cols*5, rows*4))
     for i, info in enumerate(per):
         base = cv2.cvtColor((residual0*255).astype(np.uint8), cv2.COLOR_GRAY2RGB)
         steps = info["steps"]
@@ -247,8 +277,13 @@ def main():
         plt.subplot(rows, cols, i+1)
         plt.imshow(base[..., ::-1]); plt.axis("off")
         plt.title(f"angle {info['angle']:.1f}°\nscale={info['final_scale']:.3f}, area={int(info['final_area'])}")
-    plt.tight_layout(); plt.show()
+    plt.tight_layout()
+    #fig3.savefig(OUT_DIR / f"{stem}_per_angle_search.png", dpi=400, bbox_inches="tight")  # NEW
+    fig3.savefig(OUT_DIR / f"{stem}_per_angle_search.pdf", bbox_inches="tight")
+    plt.show()
+    plt.close(fig3)
 
+    # 4) Final winner
     if res is not None:
         cx0, cy0, w, h, ang, box = res
         img = cv2.cvtColor((residual0*255).astype(np.uint8), cv2.COLOR_GRAY2RGB)
@@ -259,11 +294,15 @@ def main():
             cv2.polylines(img, [best_info["final_box"].astype(np.int32)], True, (255,255,0), 4)
         cv2.circle(img, (int(cx0), int(cy0)), 3, (0,0,0), -1)
         cv2.circle(img, (int(cx0), int(cy0)), 2, (255,255,255), -1)
-        plt.figure(figsize=(6,6)); plt.imshow(img[..., ::-1]); plt.axis("off")
+        fig4 = plt.figure(figsize=(6,6))
+        plt.imshow(img[..., ::-1]); plt.axis("off")
         plt.title(f"WINNER angle={ang:.1f}°, w={w:.1f}, h={h:.1f}, area={int(w*h)}")
+        #fig4.savefig(OUT_DIR / f"{stem}_winner_box.png", dpi=400, bbox_inches="tight")  # NEW
+        fig4.savefig(OUT_DIR / f"{stem}_winner_box.pdf", bbox_inches="tight")
         plt.show()
+        plt.close(fig4)
 
-    print("[OK] Visualization complete.")
+    print("[OK] Visualization complete. Figures saved to", OUT_DIR.resolve())
 
 if __name__ == "__main__":
     main()
