@@ -44,6 +44,18 @@ GREEDY_IOU_CAP    = 0.50
 GREEDY_MAX_SIDE   = 1000
 # ---------------------------------------------------------------
 
+# Put these near the top of your script
+FIG_SIZE = (6.2, 4.4)   # inches; pick any size you like
+TOP = 0.95              # leave room for the title; 1.0 means no room
+BORDERLESS = dict(left=0, right=1, bottom=0, top=TOP)
+
+def save_square(fig, path):
+    fig.set_size_inches(*FIG_SIZE, forward=True)
+    fig.subplots_adjust(**BORDERLESS)
+    fig.savefig(path, dpi=600)           # <-- no bbox_inches="tight"
+    plt.close(fig)
+
+
 # ---------- shared helpers (borrowed from your exporter) ----------
 def order_quad_clockwise(pts4: np.ndarray) -> np.ndarray:
     pts = np.asarray(pts4, dtype=np.float32)
@@ -417,21 +429,18 @@ def main():
         residual = cv2.erode(residual, k)
 
     # ---------- Figure A: allowed with guard ----------
-    figA = plt.figure(figsize=(6,6))
+    figA = plt.figure(figsize=(7,6))
     plt.imshow((residual*255).astype(np.uint8), cmap="gray")
     plt.title("Allowed ROI within Contaminated OBB")
     plt.axis("off")
-    figA.savefig(OUT_DIR / "A_allowed_roi.pdf", dpi=600, bbox_inches="tight")
+    #figA.savefig(OUT_DIR / "A_allowed_roi.pdf", dpi=600, bbox_inches="tight")
+    save_square(figA, OUT_DIR / "A_allowed_roi.png")
     plt.show()
 
     # ---------- Stage 1 (local refine) ----------
     # baseline (cx,cy,w,h,angle) — recover from the polygon in image coords
     cnt = poly.astype(np.float32).reshape(-1,1,2)
     cx0, cy0, w0, h0, ang0, _ = rect_from_contour(cnt)
-    
-    single_candidates_img = []
-    best_single_img = None
-    best_single_area = 0.0
 
     # orientation hint from allowed region (ROI coords)
     cnts, _ = cv2.findContours(allowed_roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -456,10 +465,11 @@ def main():
 
         img = cv2.cvtColor((residual*255).astype(np.uint8), cv2.COLOR_GRAY2RGB)
         cv2.polylines(img, [box1.astype(np.int32)], True, (0, 180, 0), 8)
-        figB = plt.figure(figsize=(6,6))
+        figB = plt.figure(figsize=(7,6))
         plt.imshow(img[..., ::-1]); plt.axis("off")
         plt.title(f"S1 winner  angle={ang1:.1f}°, w={w1:.1f}, h={h1:.1f}, Coverage={coverage:.1f}%")
-        figB.savefig(OUT_DIR / "B_stage1_S1.pdf", dpi=600, bbox_inches="tight")
+        #figB.savefig(OUT_DIR / "B_stage1_S1.pdf", dpi=600, bbox_inches="tight")
+        save_square(figB, OUT_DIR / "B_stage1_S1.png")
         plt.show()
     else:
         print("[S1] No valid refinement.")
@@ -475,10 +485,11 @@ def main():
 
         img = cv2.cvtColor((residual*255).astype(np.uint8), cv2.COLOR_GRAY2RGB)
         cv2.polylines(img, [box2.astype(np.int32)], True, (0, 180, 0), 8)
-        figC = plt.figure(figsize=(6,6))
+        figC = plt.figure(figsize=(7,6))
         plt.imshow(img[..., ::-1]); plt.axis("off")
         plt.title(f"S2 winner  angle={ang2:.1f}°, w={w2:.1f}, h={h2:.1f}, Coverage={coverage:.1f}%")
-        figC.savefig(OUT_DIR / "C_stage2_S2.pdf", dpi=600, bbox_inches="tight")
+        #figC.savefig(OUT_DIR / "C_stage2_S2.pdf", dpi=600, bbox_inches="tight")
+        save_square(figC, OUT_DIR / "C_stage2_S2.png")
         plt.show()
     else:
         print("[S2] No valid max-inscribed rectangle.")
@@ -498,10 +509,11 @@ def main():
 
     coverage = area_sum / max(1, allowed_area) * 100
 
-    figD = plt.figure(figsize=(6,6))
+    figD = plt.figure(figsize=(7,6))
     plt.imshow(img[..., ::-1]); plt.axis("off")
     plt.title(f"S3 greedy  boxes={len(rects)}, Coverage={coverage:.1f}%")
-    figD.savefig(OUT_DIR / "D_stage3_S3.pdf", dpi=600, bbox_inches="tight")
+    #figD.savefig(OUT_DIR / "D_stage3_S3.pdf", dpi=600, bbox_inches="tight")
+    save_square(figD, OUT_DIR / "D_stage3_S3.png")
     plt.show()
 
 if __name__ == "__main__":
