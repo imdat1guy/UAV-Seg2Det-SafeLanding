@@ -431,10 +431,10 @@ def main():
     # ---------- Figure A: allowed with guard ----------
     figA = plt.figure(figsize=(7,6))
     plt.imshow((residual*255).astype(np.uint8), cmap="gray")
-    plt.title("Allowed ROI within Contaminated OBB")
+    # plt.title("Allowed ROI within Contaminated OBB")
     plt.axis("off")
     #figA.savefig(OUT_DIR / "A_allowed_roi.pdf", dpi=600, bbox_inches="tight")
-    save_square(figA, OUT_DIR / "A_allowed_roi.png")
+    save_square(figA, OUT_DIR / "A_allowed_roi.pdf")
     plt.show()
 
     # ---------- Stage 1 (local refine) ----------
@@ -464,12 +464,12 @@ def main():
         coverage = area / max(1, allowed_area) * 100
 
         img = cv2.cvtColor((residual*255).astype(np.uint8), cv2.COLOR_GRAY2RGB)
-        cv2.polylines(img, [box1.astype(np.int32)], True, (0, 180, 0), 8)
+        cv2.polylines(img, [box1.astype(np.int32)], True, (0, 180, 0), 30)
         figB = plt.figure(figsize=(7,6))
         plt.imshow(img[..., ::-1]); plt.axis("off")
-        plt.title(f"S1 winner  angle={ang1:.1f}°, w={w1:.1f}, h={h1:.1f}, Coverage={coverage:.1f}%")
+        # plt.title(f"S1 winner  angle={ang1:.1f}°, w={w1:.1f}, h={h1:.1f}, Coverage={coverage:.1f}%")
         #figB.savefig(OUT_DIR / "B_stage1_S1.pdf", dpi=600, bbox_inches="tight")
-        save_square(figB, OUT_DIR / "B_stage1_S1.png")
+        save_square(figB, OUT_DIR / "B_stage1_S1.pdf")
         plt.show()
     else:
         print("[S1] No valid refinement.")
@@ -484,12 +484,12 @@ def main():
         coverage = area / max(1, allowed_area) * 100
 
         img = cv2.cvtColor((residual*255).astype(np.uint8), cv2.COLOR_GRAY2RGB)
-        cv2.polylines(img, [box2.astype(np.int32)], True, (0, 180, 0), 8)
+        cv2.polylines(img, [box2.astype(np.int32)], True, (0, 180, 0), 30)
         figC = plt.figure(figsize=(7,6))
         plt.imshow(img[..., ::-1]); plt.axis("off")
-        plt.title(f"S2 winner  angle={ang2:.1f}°, w={w2:.1f}, h={h2:.1f}, Coverage={coverage:.1f}%")
+        # plt.title(f"S2 winner  angle={ang2:.1f}°, w={w2:.1f}, h={h2:.1f}, Coverage={coverage:.1f}%")
         #figC.savefig(OUT_DIR / "C_stage2_S2.pdf", dpi=600, bbox_inches="tight")
-        save_square(figC, OUT_DIR / "C_stage2_S2.png")
+        save_square(figC, OUT_DIR / "C_stage2_S2.pdf")
         plt.show()
     else:
         print("[S2] No valid max-inscribed rectangle.")
@@ -505,15 +505,15 @@ def main():
     area_sum = 0.0
     for (cx, cy, bw, bh, ang, box) in rects:
         area_sum += bw*bh
-        cv2.polylines(img, [box.astype(np.int32)], True, (0, 180, 0), 8)
+        cv2.polylines(img, [box.astype(np.int32)], True, (0, 180, 0), 30)
 
     coverage = area_sum / max(1, allowed_area) * 100
 
     figD = plt.figure(figsize=(7,6))
     plt.imshow(img[..., ::-1]); plt.axis("off")
-    plt.title(f"S3 greedy  boxes={len(rects)}, Coverage={coverage:.1f}%")
+    # plt.title(f"S3 greedy  boxes={len(rects)}, Coverage={coverage:.1f}%")
     #figD.savefig(OUT_DIR / "D_stage3_S3.pdf", dpi=600, bbox_inches="tight")
-    save_square(figD, OUT_DIR / "D_stage3_S3.png")
+    save_square(figD, OUT_DIR / "D_stage3_S3.pdf")
     plt.show()
 
 if __name__ == "__main__":

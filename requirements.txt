@@ -1,0 +1,10 @@
+numpy
+opencv-python
+matplotlib
+pandas
+Pillow
+tqdm
+PyYAML
+albumentations
+segmentation-models-pytorch
+ultralytics

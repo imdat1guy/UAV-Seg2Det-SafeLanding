@@ -4,3 +4,4 @@ slz_obb/
 *.pth
 datasets/
 runs/
+src/debugging/salvage_vis
