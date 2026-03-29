@@ -32,7 +32,7 @@ The repo provides a quick script and the weights needed for testing out the infe
 
    ```bash
    pip install jupyter
-   python -m ipykernel install --user --name VL-MOT
+   python -m ipykernel install --user --name myenv
    ```
 
 6. Clone this repo, pip Install the requirements file
