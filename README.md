@@ -150,3 +150,22 @@ Data
             L altitude_final.csv
 ...
 ```
+
+
+## Citation
+
+```
+@article{HASSAN2026100140,
+title = {Vision-based detection of safe landing zones for resource-constrained UAVs},
+journal = {ISPRS Open Journal of Photogrammetry and Remote Sensing},
+volume = {21},
+pages = {100140},
+year = {2026},
+issn = {2667-3932},
+doi = {https://doi.org/10.1016/j.ophoto.2026.100140},
+url = {https://www.sciencedirect.com/science/article/pii/S2667393226000268},
+author = {Abduraouf Hassan and Rana Azzam and Khaled Salah and Abdulhadi Shoufan},
+keywords = {UAV, Autonomous safe landing, Oriented object detection, Semantic segmentation, Resource-constrained systems},
+abstract = {Reliable detection of safe landing zones is a fundamental requirement for autonomous UAV operations in real-world environments. Existing approaches rely on multi-sensor fusion and impose substantial onboard computational, power, and storage demands. Consequently, these methods are impractical for small, resource-constrained UAV platforms. This paper proposes a vision-based safe landing zone (SLZ) detection approach designed for real-time deployment onboard small UAVs. A custom safety-aware dataset is constructed from the ICG Semantic Drone dataset (ICG) (Institute of Visual Computing, 2019). The original semantic segmentation masks are reclassified using a four-level safety scheme that captures terrain suitability and proximity to hazards. A segmentation-to-detection algorithm is introduced to determine the optimal oriented bounding box (OBB) for each connected safe region within the mask. The resulting dataset is used to train compact YOLO-based detectors for real-time SLZ detection. To assess both detection performance and landing decision reliability, we introduce new coverage and decision-centric evaluation metrics, including mean Intersection-over-Allowed, Safe-Area Utilization, Safe Landing Success, and False-Safe Rate. Experimental results demonstrate up to 85% Safe Landing Success with less than 3% False-Safe Rate, while maintaining real-time throughput up to 50FPS using models with as few as 2.45M parameters. Compared with alternative approaches, our method offers a better balance between safety, accuracy, and efficiency, which makes it well suited for resource-constrained UAVs.}
+}
+```
